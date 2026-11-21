@@ -2,26 +2,26 @@ pipeline {
     agent any
 
     stages {
-        stage('Setup Environment') {
+        stage('Setup & Test') {
             steps {
-                // Create a virtual environment and install dependencies
                 sh 'python3 -m venv venv'
-                sh './venv/bin/pip install -r requirements.txt'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                // Run tests (remove this stage if you don't have tests yet)
+                sh './venv/bin/pip install -r requirements.txt build'
                 sh './venv/bin/pytest'
             }
         }
 
-        stage('Run Script') {
+        stage('Build Package') {
             steps {
-                // Execute your Python file
-                sh './venv/bin/python app.py'
+                // Builds .whl and .tar.gz inside a dist/ folder
+                sh './venv/bin/python -m build'
             }
+        }
+    }
+
+    post {
+        success {
+            // Saves the built files in Jenkins so you can download/deploy them
+            archiveArtifacts artifacts: 'dist/*', fingerprint: true
         }
     }
 }
